@@ -12,7 +12,8 @@ canvas {
 .mobileButtons{
     position: absolute;
     left: 9%;
-    top: 13%;
+    top: 5%;
+    opacity: 0.1;
 }
 .btn{
     background: transparent;
@@ -28,6 +29,16 @@ canvas {
 .hoz{
     height: 25vh;
     width: 40vw;
+}
+
+.down{
+    transform: rotate(180deg);
+}
+.left{
+    transform: rotate(-90deg);
+}
+.right{
+    transform: rotate(90deg);
 }
 
 @media only screen  and (min-width : 1224px) {
