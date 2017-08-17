@@ -4,6 +4,7 @@
 var Game = Game || {};
 var Keyboard = Keyboard || {};
 var Component = Component || {};
+var snake;
 
 /**
  * Keyboard Map
@@ -37,6 +38,11 @@ Keyboard.ControllerEvents = function () {
         self.pressKey = event.which;
     };
 
+    //setKey
+    this.setKey  = function (id) {
+        self.pressKey= id;
+    }
+
     // Get Key
     this.getKey = function () {
         return this.keymap[this.pressKey];
@@ -44,7 +50,7 @@ Keyboard.ControllerEvents = function () {
 
     // Get Opposite
     this.isOpposite = function (current, nw) {
-        return nw != this.KeymapOpposite[current];
+        return nw !== this.KeymapOpposite[current];
     };
 };
 
@@ -243,8 +249,6 @@ Game.Draw = function (context, snake) {
     };
     // Check Collision with walls
     this.collision = function (nx, ny) {
-        console.log(snake.stage.width / snake.stage.conf.cw)
-        console.log(ny)
         if (
           nx === -1 ||
           nx >= Math.floor(snake.stage.width / snake.stage.conf.cw) ||
@@ -277,11 +281,12 @@ Game.Snake = function (elementId, conf) {
     setInterval(function () {
         gameDraw.drawStage();
     }, snake.stage.conf.fps);
+    return snake;
 };
 
 /**
  * Window Load
  */
 window.onload = function () {
-    var snake = new Game.Snake("stage", {fps: 175, size: 4});
+    snake = new Game.Snake("stage", {fps: 175, size: 4});
 };
