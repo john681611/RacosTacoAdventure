@@ -199,54 +199,30 @@ Game.Draw = function (context, snake) {
         // Draw Snake
         for (var i = 1; i < snake.stage.length.length; i++) {
             var cell = snake.stage.length[i];
-            this.drawCell(cell.x, cell.y);
+            this.draw(cell.x,cell.y,document.getElementById("taco"));
         }
 
         //Draw head
-        this.drawHead(head.x, head.y);
+        this.draw(head.x,head.y,document.getElementById("head"));
 
         // Draw Food
-        this.drawFood(snake.stage.food.x, snake.stage.food.y);
+        this.draw(snake.stage.food.x,snake.stage.food.y,document.getElementById("food"));
         context.fillStyle = "blue";
         // Draw Score
         context.fillText("Score: " + snake.stage.score, 5, snake.stage.height - 5);
     };
 
-    // Draw Cell
-    this.drawCell = function (x, y) {
-        var img = document.getElementById("taco");
-        context.drawImage(
-          img,
-          x * snake.stage.conf.cw + 6,
-          y * snake.stage.conf.cw + 6,
-          snake.stage.conf.imgSize,
-          snake.stage.conf.imgSize
-        );
-    };
 
-    // Draw head
-    this.drawHead = function (x, y) {
-        var img = document.getElementById("head");
-        context.drawImage(
-          img,
-          x * snake.stage.conf.cw + 6,
-          y * snake.stage.conf.cw + 6,
-          snake.stage.conf.imgSize,
-          snake.stage.conf.imgSize
-        );
-    };
 
-    // Draw head
-    this.drawFood = function (x, y) {
-        var img = document.getElementById("food");
-        context.drawImage(
+    this.draw = function (x,y,img){
+         context.drawImage(
           img,
           x * snake.stage.conf.cw + 6,
           y * snake.stage.conf.cw + 6,
           snake.stage.conf.imgSize,
           snake.stage.conf.imgSize
         );
-    };
+    }
     // Check Collision with walls
     this.collision = function (nx, ny) {
         if (
@@ -259,7 +235,7 @@ Game.Draw = function (context, snake) {
         }
         for (var i = 4; i < snake.stage.length.length; i++) {
             var cell = snake.stage.length[i];
-            if (cell.x == nx && cell.y == ny) {
+            if (cell.x === nx && cell.y === ny) {
                 return true;
             }
         }
