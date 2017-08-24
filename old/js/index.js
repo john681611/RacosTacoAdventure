@@ -6,21 +6,11 @@ var Keyboard = Keyboard || {};
 var Component = Component || {};
 var snake;
 
-/**
- * Keyboard Map
- */
-Keyboard.Keymap = {
-    37: "left",
-    38: "up",
-    39: "right",
-    40: "down"
-};
-
 Keyboard.KeymapOpposite = {
-    right: "left",
-    down: "up",
-    left: "right",
-    up: "down"
+    39: 37,
+    40: 38,
+    37: 39,
+    38: 40
 };
 
 /**
@@ -30,7 +20,6 @@ Keyboard.ControllerEvents = function () {
     // Setts
     var self = this;
     this.pressKey = null;
-    this.keymap = Keyboard.Keymap;
     this.KeymapOpposite = Keyboard.KeymapOpposite;
 
     // Keydown Event
@@ -45,7 +34,7 @@ Keyboard.ControllerEvents = function () {
 
     // Get Key
     this.getKey = function () {
-        return this.keymap[this.pressKey];
+        return this.pressKey
     };
 
     // Get Opposite
@@ -65,7 +54,7 @@ Component.Stage = function (canvas, conf) {
     this.length = [];
     this.food = {};
     this.score = 0;
-    this.direction = "right";
+    this.direction = 39;
     this.conf = {
         cw: 75,
         size: 4,
@@ -129,7 +118,7 @@ Component.Snake = function (canvas, conf) {
         this.stage.length = [];
         this.stage.food = {};
         this.stage.score = 0;
-        this.stage.direction = "right";
+        this.stage.direction = 39;
         this.stage.keyEvent.pressKey = null;
         this.initSnake();
         this.initFood();
@@ -144,10 +133,7 @@ Game.Draw = function (context, snake) {
     this.drawStage = function () {
         // Check Keypress And Set Stage direction
         var keyPress = snake.stage.keyEvent.getKey();
-        if (
-          typeof keyPress !== "undefined" &&
-          snake.stage.keyEvent.isOpposite(snake.stage.direction, keyPress)
-        ) {
+        if (keyPress && snake.stage.keyEvent.isOpposite(snake.stage.direction, keyPress)) {
             snake.stage.direction = keyPress;
         }
 
@@ -161,16 +147,16 @@ Game.Draw = function (context, snake) {
 
         // Add position by stage direction
         switch (snake.stage.direction) {
-            case "right":
+            case 39:
                 nx++;
                 break;
-            case "left":
+            case 37:
                 nx--;
                 break;
-            case "up":
+            case 38:
                 ny--;
                 break;
-            case "down":
+            case 40:
                 ny++;
                 break;
         }
