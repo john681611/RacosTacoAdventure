@@ -4,7 +4,7 @@
 var Game = Game || {};
 var Keyboard = Keyboard || {};
 var Component = Component || {};
-var snake;
+var interval;
 
 Keyboard.KeymapOpposite = {
     39: 37,
@@ -103,17 +103,6 @@ Component.Raco = function (canvas, conf) {
 
     // Init Food
     this.initTaco();
-
-    // Restart Stage
-    this.restart = function () {
-        this.stage.length = [];
-        this.stage.food = {};
-        this.stage.score = 0;
-        this.stage.direction = 39;
-        this.stage.keyEvent.pressKey = null;
-        this.initRaco();
-        this.initTaco();
-    };
 };
 
 /**
@@ -151,10 +140,7 @@ Game.Draw = function (context, raco) {
         raco.stage.Lastdirection = raco.stage.direction;
 
         // Check Collision
-        if (this.collision(nx, ny) === true) {
-            raco.restart();
-            return;
-        }
+        this.collision(nx, ny,raco);
 
         // Logic of raco food
         var tail;
@@ -181,10 +167,8 @@ Game.Draw = function (context, raco) {
 
         // Draw Food
         this.draw(raco.stage.food.x,raco.stage.food.y,document.getElementById("food"));
-        context.fillStyle = "blue";
-        context.font="30px Arial";
         // Draw Score
-        context.fillText("Score: " + raco.stage.score, 5, context.canvas.height - 5);
+        context.fillText("Score: " + raco.stage.score, context.canvas.width/2, 50);
     };
 
 
@@ -199,23 +183,53 @@ Game.Draw = function (context, raco) {
         );
     }
     // Check Collision with walls
-    this.collision = function (nx, ny) {
+    this.collision = function (nx, ny,raco) {
         if (
           nx === -1 ||
           nx >= Math.floor(context.canvas.width / raco.stage.conf.cw) ||
           ny === -1 ||
           ny >= Math.floor(context.canvas.height / raco.stage.conf.cw)
         ) {
-            return true;
+            this.fail(raco,false);
         }
         for (var i = 4; i < raco.stage.length.length; i++) {
             var cell = raco.stage.length[i];
             if (cell.x === nx && cell.y === ny) {
-                return true;
+                this.fail(raco,true);
             }
         }
         return false;
     };
+
+    this.fail = function(raco,taco,self){
+
+        this.countdown = function (x){
+            context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+            if(taco){
+                context.fillText("Oh No Raco Crushed A Taco!",context.canvas.width/2 , context.canvas.height/2);
+            } else {
+                context.fillText("Oh No, Raco Bashed His Nose!",context.canvas.width/2 , context.canvas.height/2);
+            }
+            context.fillText(x, context.canvas.width/2 , context.canvas.height/2+80);
+            var self = this;
+            setTimeout(function(){
+                    if (x>0){
+                    self.countdown(x-1);
+                }
+            },1000);
+        }
+        context.fillStyle = "red";
+        context.font="72px  Lobster";
+        context.textAlign= "center";
+        clearInterval(interval);
+        this.countdown(5);
+
+        setTimeout(function(){
+            racoGame = new Game.Raco("stage", {fps: 10, tail: 4});
+        },5500);
+    }
+
+
 };
 
 /**
@@ -223,39 +237,40 @@ Game.Draw = function (context, raco) {
  */
 Game.Raco = function (elementId, conf) {
     // Sets
+    var raco,gameDraw;
     var canvas = document.getElementById(elementId);
     var context = canvas.getContext("2d");
-    var raco = new Component.Raco(canvas, conf);
-    var gameDraw = new Game.Draw(context, raco);
+
 
     window.addEventListener('resize', this.resizeCanvas, false);
 
     this.resizeCanvas = function() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        console.log(canvas.width)
     };
 
     this.resizeCanvas();
-
+    context.textAlign= "center";
     context.fillStyle = "red";
-    context.font="72px Arial";
-    // Draw Score
-    context.fillText("RELEASE THE RACO!",context.canvas.width/2 - 400 , context.canvas.height/2 - 50);
-    setTimeout(function(){
-        setInterval(function () {
-            gameDraw.drawStage();
-        }, 1000/raco.stage.conf.fps);
-    },2000);
-    // Game Interval
+    context.font="72px  Lobster";
+    context.fillText("Release The Raco!",context.canvas.width/2 , context.canvas.height/2-50);
+    context.font="50px  Lobster";
+    context.fillText("Press Any Button",context.canvas.width/2  , context.canvas.height/2);
 
-    return raco;
+    var running = true;
+    document.onkeydown = function (event) {
+            raco = new Component.Raco(canvas, conf);
+            gameDraw = new Game.Draw(context, raco);
+            interval = setInterval(function () {
+                gameDraw.drawStage();
+            }, 1000 / raco.stage.conf.fps);
+            running = false;
+    };
 };
 
 /**
  * Window Load
  */
 window.onload = function () {
-
-    raco = new Game.Raco("stage", {fps: 10, tail: 4});
+    new Game.Raco("stage", {fps: 10, tail: 4});
 };
