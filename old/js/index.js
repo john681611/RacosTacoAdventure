@@ -256,6 +256,13 @@ Game.Raco = function (elementId, conf) {
     context.fillText("Release The Raco!",context.canvas.width/2 , context.canvas.height/2-50);
     context.font="50px  Lobster";
     context.fillText("Press Any Button",context.canvas.width/2  , context.canvas.height/2);
+    context.drawImage(
+        document.getElementById("head"),
+        context.canvas.width/2-200,
+        context.canvas.height/2-450,
+        400,
+        400
+    );
 
     var running = true;
     document.onkeydown = function (event) {
