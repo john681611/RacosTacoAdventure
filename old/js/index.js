@@ -238,10 +238,17 @@ Game.Raco = function (elementId, conf) {
 
     this.resizeCanvas();
 
+    context.fillStyle = "red";
+    context.font="72px Arial";
+    // Draw Score
+    context.fillText("RELEASE THE RACO!",context.canvas.width/2 - 400 , context.canvas.height/2 - 50);
+    setTimeout(function(){
+        setInterval(function () {
+            gameDraw.drawStage();
+        }, 1000/raco.stage.conf.fps);
+    },2000);
     // Game Interval
-    setInterval(function () {
-        gameDraw.drawStage();
-    }, 1000/raco.stage.conf.fps);
+
     return raco;
 };
 
@@ -249,5 +256,6 @@ Game.Raco = function (elementId, conf) {
  * Window Load
  */
 window.onload = function () {
+
     raco = new Game.Raco("stage", {fps: 10, tail: 4});
 };
