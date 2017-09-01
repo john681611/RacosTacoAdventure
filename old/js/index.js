@@ -27,11 +27,6 @@ Keyboard.ControllerEvents = function () {
         self.pressKey = event.which;
     };
 
-    //setKey
-    this.setKey  = function (id) {
-        self.pressKey= id;
-    }
-
     // Get Key
     this.getKey = function () {
         return this.pressKey
@@ -49,17 +44,15 @@ Keyboard.ControllerEvents = function () {
 Component.Stage = function (canvas, conf) {
     // Sets
     this.keyEvent = new Keyboard.ControllerEvents();
-    this.width = canvas.width;
-    this.height = canvas.height;
     this.length = [];
     this.food = {};
     this.score = 0;
     this.direction = 39;
     this.conf = {
-        cw: 75,
-        size: 4,
-        imgSize: 100,
-        fps: 60
+        cw: 50,
+        tail: 4,
+        fps: 30,
+        size:100
     };
 
     // Merge Conf
@@ -73,45 +66,43 @@ Component.Stage = function (canvas, conf) {
 };
 
 /**
- * Game Component Snake
+ * Game Component Raco
  */
-Component.Snake = function (canvas, conf) {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+Component.Raco = function (canvas, conf) {
     // Game Stage
     this.stage = new Component.Stage(canvas, conf);
 
-    // Init Snake
-    this.initSnake = function () {
-        // Itaration in Snake Conf
-        for (var i = 0; i < this.stage.conf.size; i++) {
-            // Add Snake Cells
+    // Init Raco
+    this.initRaco = function () {
+        // Itaration in Raco Conf
+        for (var i = 0; i < this.stage.conf.tail; i++) {
+            // Add Raco Cells
             this.stage.length.push({x: i, y: 0});
         }
     };
 
-    // Call init Snake
-    this.initSnake();
+    // Call init Raco
+    this.initRaco();
 
     // Init Food
-    this.initFood = function () {
+    this.initTaco = function () {
         // Add food on stage
         this.stage.food = {
             x: Math.floor(
               Math.random() *
-              (this.stage.width - this.stage.conf.cw) /
+              (canvas.width - this.stage.conf.cw) /
               this.stage.conf.cw
             ),
             y: Math.floor(
               Math.random() *
-              (this.stage.height - this.stage.conf.cw) /
+              (canvas.height - this.stage.conf.cw) /
               this.stage.conf.cw
             )
         };
     };
 
     // Init Food
-    this.initFood();
+    this.initTaco();
 
     // Restart Stage
     this.restart = function () {
@@ -120,33 +111,30 @@ Component.Snake = function (canvas, conf) {
         this.stage.score = 0;
         this.stage.direction = 39;
         this.stage.keyEvent.pressKey = null;
-        this.initSnake();
-        this.initFood();
+        this.initRaco();
+        this.initTaco();
     };
 };
 
 /**
  * Game Draw
  */
-Game.Draw = function (context, snake) {
+Game.Draw = function (context, raco) {
     // Draw Stage
     this.drawStage = function () {
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         // Check Keypress And Set Stage direction
-        var keyPress = snake.stage.keyEvent.getKey();
-        if (keyPress && snake.stage.keyEvent.isOpposite(snake.stage.direction, keyPress)) {
-            snake.stage.direction = keyPress;
+        var keyPress = raco.stage.keyEvent.getKey();
+        if (keyPress && raco.stage.keyEvent.isOpposite(raco.stage.direction, keyPress)) {
+            raco.stage.direction = keyPress;
         }
 
-        // Draw White Stage
-        context.fillStyle = "white";
-        context.fillRect(0, 0, snake.stage.width, snake.stage.height);
-
-        // Snake Position
-        var nx = snake.stage.length[0].x;
-        var ny = snake.stage.length[0].y;
+        // raco Position
+        var nx = raco.stage.length[0].x;
+        var ny = raco.stage.length[0].y;
 
         // Add position by stage direction
-        switch (snake.stage.direction) {
+        switch (raco.stage.direction) {
             case 39:
                 nx++;
                 break;
@@ -160,31 +148,31 @@ Game.Draw = function (context, snake) {
                 ny++;
                 break;
         }
-        snake.stage.Lastdirection = snake.stage.direction;
+        raco.stage.Lastdirection = raco.stage.direction;
 
         // Check Collision
         if (this.collision(nx, ny) === true) {
-            snake.restart();
+            raco.restart();
             return;
         }
 
-        // Logic of Snake food
+        // Logic of raco food
         var tail;
-        if (nx === snake.stage.food.x && ny === snake.stage.food.y) {
+        if (nx === raco.stage.food.x && ny === raco.stage.food.y) {
              tail = {x: nx, y: ny};
-            snake.stage.score++;
-            snake.initFood();
+            raco.stage.score++;
+            raco.initTaco();
         } else {
-             tail = snake.stage.length.pop();
+             tail = raco.stage.length.pop();
             tail.x = nx;
             tail.y = ny;
         }
-        snake.stage.length.unshift(tail);
+        raco.stage.length.unshift(tail);
 
-        var head = snake.stage.length[0];
-        // Draw Snake
-        for (var i = 1; i < snake.stage.length.length; i++) {
-            var cell = snake.stage.length[i];
+        var head = raco.stage.length[0];
+        // Draw raco
+        for (var i = 1; i < raco.stage.length.length; i++) {
+            var cell = raco.stage.length[i];
             this.draw(cell.x,cell.y,document.getElementById("taco"));
         }
 
@@ -192,35 +180,36 @@ Game.Draw = function (context, snake) {
         this.draw(head.x,head.y,document.getElementById("head"));
 
         // Draw Food
-        this.draw(snake.stage.food.x,snake.stage.food.y,document.getElementById("food"));
+        this.draw(raco.stage.food.x,raco.stage.food.y,document.getElementById("food"));
         context.fillStyle = "blue";
+        context.font="30px Arial";
         // Draw Score
-        context.fillText("Score: " + snake.stage.score, 5, snake.stage.height - 5);
+        context.fillText("Score: " + raco.stage.score, 5, context.canvas.height - 5);
     };
 
 
 
     this.draw = function (x,y,img){
          context.drawImage(
-          img,
-          x * snake.stage.conf.cw + 6,
-          y * snake.stage.conf.cw + 6,
-          snake.stage.conf.imgSize,
-          snake.stage.conf.imgSize
+            img,
+            x * raco.stage.conf.cw + 6,
+            y * raco.stage.conf.cw + 6,
+            raco.stage.conf.size,
+            raco.stage.conf.size
         );
     }
     // Check Collision with walls
     this.collision = function (nx, ny) {
         if (
           nx === -1 ||
-          nx >= Math.floor(snake.stage.width / snake.stage.conf.cw) ||
+          nx >= Math.floor(context.canvas.width / raco.stage.conf.cw) ||
           ny === -1 ||
-          ny >= Math.floor(snake.stage.height / snake.stage.conf.cw)
+          ny >= Math.floor(context.canvas.height / raco.stage.conf.cw)
         ) {
             return true;
         }
-        for (var i = 4; i < snake.stage.length.length; i++) {
-            var cell = snake.stage.length[i];
+        for (var i = 4; i < raco.stage.length.length; i++) {
+            var cell = raco.stage.length[i];
             if (cell.x === nx && cell.y === ny) {
                 return true;
             }
@@ -230,25 +219,35 @@ Game.Draw = function (context, snake) {
 };
 
 /**
- * Game Snake
+ * Game Raco
  */
-Game.Snake = function (elementId, conf) {
+Game.Raco = function (elementId, conf) {
     // Sets
     var canvas = document.getElementById(elementId);
     var context = canvas.getContext("2d");
-    var snake = new Component.Snake(canvas, conf);
-    var gameDraw = new Game.Draw(context, snake);
+    var raco = new Component.Raco(canvas, conf);
+    var gameDraw = new Game.Draw(context, raco);
+
+    window.addEventListener('resize', this.resizeCanvas, false);
+
+    this.resizeCanvas = function() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        console.log(canvas.width)
+    };
+
+    this.resizeCanvas();
 
     // Game Interval
     setInterval(function () {
         gameDraw.drawStage();
-    }, snake.stage.conf.fps);
-    return snake;
+    }, 1000/raco.stage.conf.fps);
+    return raco;
 };
 
 /**
  * Window Load
  */
 window.onload = function () {
-    snake = new Game.Snake("stage", {fps: 175, size: 4});
+    raco = new Game.Raco("stage", {fps: 10, tail: 4});
 };
