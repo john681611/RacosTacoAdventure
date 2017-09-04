@@ -9,9 +9,9 @@ class Keyboard {
             37: 39,
             38: 40
         };
-
+        let self  = this;
         document.onkeydown = function (event) {
-            this.pressKey = event.which;
+            self.pressKey = event.which;
         };
         return this;
     }
@@ -30,65 +30,39 @@ class Keyboard {
     }
 }
 
-
-class Raco {
-    constructor(canvas, conf){
+class Stage {
+    constructor(canvas, cw){
         this.canvas = canvas;
-        this.stage = this.initStage(canvas, conf);
-        this.initRaco();
-        this.initTaco();
-
-        return this;
+        this.cw = cw;
+        this.tacoLocation = {};
+        this.initTaco()
     }
 
-    initRaco() {
-        // Itaration in Raco Conf
-        for (let i = 0; i < this.stage.conf.tail; i++) {
-            // Add Raco Cells
-            this.stage.length.push({x: i, y: 0});
-        }
-    };
-
     initTaco() {
-        // Add food on stage
-        this.stage.food = {
+        // Add Taco on stage
+        this.tacoLocation = {
             x: Math.floor(
                 Math.random() *
-                (this.canvas.width - this.stage.conf.cw) /
-                this.stage.conf.cw
+                (this.canvas.width - this.cw) /
+                this.cw
             ),
             y: Math.floor(
                 Math.random() *
-                (this.canvas.height - this.stage.conf.cw) /
-                this.stage.conf.cw
+                (this.canvas.height - this.cw) /
+                this.cw
             )
         };
     };
+}
 
-    initStage(conf) {
-        this.keyEvent = new Keyboard();
-        this.length = [];
-        this.food = {};
-        this.score = 0;
+
+class Raco {
+    constructor(canvas){
+        this.canvas = canvas;
+        this.length = [{x: 0, y: 0}];
         this.direction = 39;
-        this.conf = {
-            cw: 50,
-            tail: 4,
-            fps: 30,
-            size:100
-        };
-
-        // Merge Conf
-        if (typeof conf === "object") {
-            for (let key in conf) {
-                if (conf.hasOwnProperty(key)) {
-                    this.conf[key] = conf[key];
-                }
-            }
-        }
-        return this
-    };
-
+        return this;
+    }
 }
 
 
@@ -100,6 +74,37 @@ class Game {
         // Sets
         this.canvas = document.getElementById(elementId);
         this.context = this.canvas.getContext("2d");
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    };
+
+    processConfig(conf) {
+        let conf2 = {
+            cw: 50,
+            fps: 15,
+            size:100
+        };
+        // Merge Conf
+        if (typeof conf === "object") {
+            for (let key in conf2) {
+                if (conf.hasOwnProperty(key)) {
+                    conf2[key] = conf[key];
+                }
+            }
+            this.conf = conf2;
+        }
+    };
+
+    Run(conf){
+        this.processConfig(conf);
+        this.raco = new Raco(this.canvas);
+        this.stage = new Stage(this.canvas, this.conf.cw);
+        this.score = 0;
+        window.addEventListener('resize', this.resizeCanvas(), false);
+        this.resizeCanvas();
         this.context.textAlign= "center";
         this.context.fillStyle = "red";
         this.context.font="72px  Lobster";
@@ -113,40 +118,30 @@ class Game {
             400,
             400
         );
-    }
 
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    };
-
-    Run(conf){
-        window.addEventListener('resize', this.resizeCanvas(), false);
-        this.resizeCanvas();
-        this.raco = new Raco(this.canvas, conf);
         let self = this;
         document.onkeydown = function () {
-            this.interval = setInterval(function () {
-                console.log(self);
+            self.keyEvent = new Keyboard();
+            self.interval = setInterval(function () {
                 self.drawStage();
-            }, 1000 / this.raco.stage.conf.fps);
+            }, 1000 / self.conf.fps);
         };
     }
 
     drawStage() {
         this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
         // Check Keypress And Set Stage direction
-        let keyPress = this.raco.stage.keyEvent.getKey();
-        if (keyPress && this.raco.stage.keyEvent.isOpposite(this.raco.stage.direction, keyPress)) {
-            this.raco.stage.direction = keyPress;
+        let keyPress = this.keyEvent.getKey();
+        if (keyPress && this.keyEvent.isOpposite(this.raco.direction, keyPress)) {
+            this.raco.direction = keyPress;
         }
 
         // raco Position
-        let nx = this.raco.stage.length[0].x;
-        let ny = this.raco.stage.length[0].y;
+        let nx = this.raco.length[0].x;
+        let ny = this.raco.length[0].y;
 
         // Add position by stage direction
-        switch (this.raco.stage.direction) {
+        switch (this.raco.direction) {
             case 39:
                 nx++;
                 break;
@@ -160,38 +155,38 @@ class Game {
                 ny++;
                 break;
         }
-        this.raco.stage.Lastdirection = this.raco.stage.direction;
+        this.raco.Lastdirection = this.raco.direction;
 
         // Check Collision
         this.collision(nx, ny);
 
-        // Logic of raco food
+        // Logic of raco Taco
         let tail;
-        if (nx === this.raco.stage.food.x && ny === this.raco.stage.food.y) {
+        if (nx === this.stage.tacoLocation.x && ny === this.stage.tacoLocation.y) {
             tail = {x: nx, y: ny};
-            this.raco.stage.score++;
-            this.raco.initTaco();
+            this.score++;
+            this.stage.initTaco();
         } else {
-            tail = this.raco.stage.length.pop();
+            tail = this.raco.length.pop();
             tail.x = nx;
             tail.y = ny;
         }
-        this.raco.stage.length.unshift(tail);
+        this.raco.length.unshift(tail);
 
-        let head = this.raco.stage.length[0];
+        let head = this.raco.length[0];
         // Draw raco
-        for (let i = 1; i < this.raco.stage.length.length; i++) {
-            let cell = this.raco.stage.length[i];
+        for (let i = 1; i < this.raco.length.length; i++) {
+            let cell = this.raco.length[i];
             this.draw(cell.x,cell.y,document.getElementById("taco"));
         }
 
         //Draw head
         this.draw(head.x,head.y,document.getElementById("head"));
 
-        // Draw Food
-        this.draw(this.raco.stage.food.x,this.raco.stage.food.y,document.getElementById("food"));
+        // Draw Taco
+        this.draw(this.stage.tacoLocation.x,this.stage.tacoLocation.y,document.getElementById("food"));
         // Draw Score
-        this.context.fillText("Score: " + this.raco.stage.score, this.context.canvas.width/2, 50);
+        this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
     };
 
 
@@ -199,24 +194,24 @@ class Game {
     draw(x,y,img){
         this.context.drawImage(
             img,
-            x * this.raco.stage.conf.cw + 6,
-            y * this.raco.stage.conf.cw + 6,
-            this.raco.stage.conf.size,
-            this.raco.stage.conf.size
+            x * this.conf.cw + 6,
+            y * this.conf.cw + 6,
+            this.conf.size,
+            this.conf.size
         );
     }
     // Check Collision with walls
     collision(nx, ny) {
         if (
             nx === -1 ||
-            nx >= Math.floor(this.context.canvas.width / this.raco.stage.conf.cw) ||
+            nx >= Math.floor(this.context.canvas.width / this.conf.cw) ||
             ny === -1 ||
-            ny >= Math.floor(this.context.canvas.height / this.raco.stage.conf.cw)
+            ny >= Math.floor(this.context.canvas.height / this.conf.cw)
         ) {
             this.fail(false);
         }
-        for (let i = 4; i < this.raco.stage.length.length; i++) {
-            let cell = this.raco.stage.length[i];
+        for (let i = 4; i < this.raco.length.length; i++) {
+            let cell = this.raco.length[i];
             if (cell.x === nx && cell.y === ny) {
                 this.fail(true);
             }
@@ -240,15 +235,15 @@ class Game {
                     self.countdown(x-1);
                 }
             },1000);
-        }
+        };
         this.context.fillStyle = "red";
         this.context.font="72px  Lobster";
         this.context.textAlign= "center";
         clearInterval(this.interval);
         this.countdown(5);
-
+        let self = this;
         setTimeout(function(){
-            racoGame = new Game.Raco("stage", {fps: 10, tail: 4});
+            self.Run(self.conf);
         },5500);
     }
 }
@@ -257,5 +252,5 @@ class Game {
  * Window Load
  */
 window.onload = function() {
-    racoGame = new Game("stage").Run({fps: 10, tail: 4});
-}
+    racoGame = new Game("stage").Run({fps: 10});
+};
