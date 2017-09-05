@@ -57,12 +57,99 @@ class Stage {
 
 
 class Raco {
-    constructor(canvas){
+    constructor(canvas) {
         this.canvas = canvas;
         this.length = [{x: 0, y: 0}];
         this.direction = 39;
         return this;
     }
+}
+
+class Screen{
+    constructor(canvas,conf){
+        this.canvas = canvas;
+        this.context = canvas.getContext("2d");
+        this.conf = conf;
+    }
+
+    updateData(raco, tacoLocation,score){
+        this.raco = raco;
+        this.tacoLocation = tacoLocation;
+        this.score = score;
+    }
+
+    drawFrame() {
+        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+
+        let head = this.raco.length[0];
+        // Draw raco
+        for (let i = 1; i < this.raco.length.length; i++) {
+            let cell = this.raco.length[i];
+            this.draw(cell.x,cell.y,document.getElementById("taco"));
+        }
+
+        this.draw(head.x,head.y,document.getElementById("head"));
+        this.draw(this.tacoLocation.x,this.tacoLocation.y,document.getElementById("food"));
+        this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
+    };
+
+    draw(x,y,img){
+        this.context.drawImage(
+            img,
+            x * this.conf.cw + 6,
+            y * this.conf.cw + 6,
+            this.conf.size,
+            this.conf.size
+        );
+    }
+
+    countdownFrame(x,taco){
+        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+        this.context.fillText(""+this.score, this.context.canvas.width/2 , this.context.canvas.height/2 - 80);
+        if(taco){
+            this.context.fillText("Oh No Raco Crushed A Taco!",this.context.canvas.width/2 , this.context.canvas.height/2);
+        } else {
+            this.context.fillText("Oh No, Raco Bashed His Nose!",this.context.canvas.width/2 , this.context.canvas.height/2);
+        }
+        this.context.fillText(x, this.context.canvas.width/2 , this.context.canvas.height/2+80);
+        let self = this;
+        setTimeout(function(){
+            if (x>0){
+                self.countdownFrame(x-1,taco);
+            }
+        },1000);
+    };
+
+    countdown(taco){
+        this.context.fillStyle = "red";
+        this.context.font="72px  Lobster";
+        this.context.textAlign= "center";
+        this.countdownFrame(5,taco);
+    }
+
+    prep() {
+        window.addEventListener('resize', this.resizeCanvas(), false);
+        this.resizeCanvas();
+        this.context.textAlign = "center";
+        this.context.fillStyle = "red";
+        this.context.font = "72px  Lobster";
+        this.context.fillText("Release The Raco!", this.context.canvas.width / 2, this.context.canvas.height / 2 - 50);
+        this.context.font = "50px  Lobster";
+        this.context.fillText("Press Any Button", this.context.canvas.width / 2, this.context.canvas.height / 2);
+        this.context.drawImage(
+            document.getElementById("head"),
+            this.context.canvas.width / 2 - 200,
+            this.context.canvas.height / 2 - 450,
+            400,
+            400
+        );
+    }
+
+    resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+    };
+
 }
 
 
@@ -73,13 +160,7 @@ class Game {
     constructor(elementId) {
         // Sets
         this.canvas = document.getElementById(elementId);
-        this.context = this.canvas.getContext("2d");
     }
-
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    };
 
     processConfig(conf) {
         let conf2 = {
@@ -100,36 +181,27 @@ class Game {
 
     Run(conf){
         this.processConfig(conf);
+        this.screen = new Screen(this.canvas,this.conf);
         this.raco = new Raco(this.canvas);
         this.stage = new Stage(this.canvas, this.conf.cw);
         this.score = 0;
-        window.addEventListener('resize', this.resizeCanvas(), false);
-        this.resizeCanvas();
-        this.context.textAlign= "center";
-        this.context.fillStyle = "red";
-        this.context.font="72px  Lobster";
-        this.context.fillText("Release The Raco!",this.context.canvas.width/2 , this.context.canvas.height/2-50);
-        this.context.font="50px  Lobster";
-        this.context.fillText("Press Any Button",this.context.canvas.width/2  , this.context.canvas.height/2);
-        this.context.drawImage(
-            document.getElementById("head"),
-            this.context.canvas.width/2-200,
-            this.context.canvas.height/2-450,
-            400,
-            400
-        );
-
+        this.screen.prep();
         let self = this;
         document.onkeydown = function () {
             self.keyEvent = new Keyboard();
-            self.interval = setInterval(function () {
-                self.drawStage();
+            //Separate Intervals for rendering and processing
+            self.processInterval = setInterval(function () {
+                self.processFrame();
             }, 1000 / self.conf.fps);
+            self.renderInterval = setInterval(function () {
+                self.screen.drawFrame()
+            }, 1000 / 60);
+
+
         };
     }
 
-    drawStage() {
-        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+    processFrame(){
         // Check Keypress And Set Stage direction
         let keyPress = this.keyEvent.getKey();
         if (keyPress && this.keyEvent.isOpposite(this.raco.direction, keyPress)) {
@@ -172,75 +244,34 @@ class Game {
             tail.y = ny;
         }
         this.raco.length.unshift(tail);
-
-        let head = this.raco.length[0];
-        // Draw raco
-        for (let i = 1; i < this.raco.length.length; i++) {
-            let cell = this.raco.length[i];
-            this.draw(cell.x,cell.y,document.getElementById("taco"));
-        }
-
-        //Draw head
-        this.draw(head.x,head.y,document.getElementById("head"));
-
-        // Draw Taco
-        this.draw(this.stage.tacoLocation.x,this.stage.tacoLocation.y,document.getElementById("food"));
-        // Draw Score
-        this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
-    };
-
-
-
-    draw(x,y,img){
-        this.context.drawImage(
-            img,
-            x * this.conf.cw + 6,
-            y * this.conf.cw + 6,
-            this.conf.size,
-            this.conf.size
-        );
+        this.screen.updateData(this.raco,this.stage.tacoLocation,this.score);
     }
+
     // Check Collision with walls
     collision(nx, ny) {
         if (
             nx === -1 ||
-            nx >= Math.floor(this.context.canvas.width / this.conf.cw) ||
+            nx >= Math.floor(this.canvas.width / this.conf.cw) ||
             ny === -1 ||
-            ny >= Math.floor(this.context.canvas.height / this.conf.cw)
+            ny >= Math.floor(this.canvas.height / this.conf.cw)
         ) {
             this.fail(false);
+            return;
         }
         for (let i = 4; i < this.raco.length.length; i++) {
             let cell = this.raco.length[i];
             if (cell.x === nx && cell.y === ny) {
                 this.fail(true);
+                return;
             }
         }
         return false;
     };
 
     fail(taco){
-
-        this.countdown = function (x){
-            this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-            if(taco){
-                this.context.fillText("Oh No Raco Crushed A Taco!",this.context.canvas.width/2 , this.context.canvas.height/2);
-            } else {
-                this.context.fillText("Oh No, Raco Bashed His Nose!",this.context.canvas.width/2 , this.context.canvas.height/2);
-            }
-            this.context.fillText(x, this.context.canvas.width/2 , this.context.canvas.height/2+80);
-            let self = this;
-            setTimeout(function(){
-                if (x>0){
-                    self.countdown(x-1);
-                }
-            },1000);
-        };
-        this.context.fillStyle = "red";
-        this.context.font="72px  Lobster";
-        this.context.textAlign= "center";
-        clearInterval(this.interval);
-        this.countdown(5);
+        clearInterval(this.processInterval);
+        clearInterval(this.renderInterval);
+        this.screen.countdown(taco);
         let self = this;
         setTimeout(function(){
             self.Run(self.conf);
@@ -252,5 +283,5 @@ class Game {
  * Window Load
  */
 window.onload = function() {
-    racoGame = new Game("stage").Run({fps: 10});
+        racoGame = new Game("stage").Run({fps: 10});
 };
