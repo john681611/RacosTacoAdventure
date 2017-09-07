@@ -11,7 +11,9 @@ class Keyboard {
         };
         let self  = this;
         document.onkeydown = function (event) {
-            self.pressKey = event.which;
+            if(self.KeymapOpposite[event.which]) {
+                self.pressKey = event.which;
+            }
         };
         return this;
     }
@@ -31,9 +33,9 @@ class Keyboard {
 }
 
 class Stage {
-    constructor(canvas, cw){
+    constructor(canvas, imageRadus){
         this.canvas = canvas;
-        this.cw = cw;
+        this.imageRadus = imageRadus;
         this.tacoLocation = {};
         this.initTaco()
     }
@@ -43,13 +45,13 @@ class Stage {
         this.tacoLocation = {
             x: Math.floor(
                 Math.random() *
-                (this.canvas.width - this.cw) /
-                this.cw
+                (this.canvas.width - this.imageRadus) /
+                this.imageRadus
             ),
             y: Math.floor(
                 Math.random() *
-                (this.canvas.height - this.cw) /
-                this.cw
+                (this.canvas.height - this.imageRadus) /
+                this.imageRadus
             )
         };
     };
@@ -96,8 +98,8 @@ class Screen{
     draw(x,y,img){
         this.context.drawImage(
             img,
-            x * this.conf.cw + 6,
-            y * this.conf.cw + 6,
+            x * this.conf.imageRadus,
+            y * this.conf.imageRadus,
             this.conf.size,
             this.conf.size
         );
@@ -163,10 +165,11 @@ class Game {
     }
 
     processConfig(conf) {
+        //defaults
         let conf2 = {
-            cw: 50,
-            fps: 15,
-            size:100
+            fps: 59,
+            size:100,
+            imageRadus: 50,
         };
         // Merge Conf
         if (typeof conf === "object") {
@@ -183,7 +186,7 @@ class Game {
         this.processConfig(conf);
         this.screen = new Screen(this.canvas,this.conf);
         this.raco = new Raco(this.canvas);
-        this.stage = new Stage(this.canvas, this.conf.cw);
+        this.stage = new Stage(this.canvas, this.conf.imageRadus);
         this.score = 0;
         this.screen.prep();
         let self = this;
@@ -215,16 +218,16 @@ class Game {
         // Add position by stage direction
         switch (this.raco.direction) {
             case 39:
-                nx++;
+                nx += 0.25;
                 break;
             case 37:
-                nx--;
+                nx -= 0.25;
                 break;
             case 38:
-                ny--;
+                ny -=0.25;
                 break;
             case 40:
-                ny++;
+                ny+= 0.25;
                 break;
         }
         this.raco.Lastdirection = this.raco.direction;
@@ -247,13 +250,23 @@ class Game {
         this.screen.updateData(this.raco,this.stage.tacoLocation,this.score);
     }
 
+    //WIP
+    eatTaco(nx,ny) {
+        let x = nx - this.stage.tacoLocation.x;
+        let y = ny - this.stage.tacoLocation.y;
+        x = x < -1 ? x * -1 : x;
+        y = y < -1 ? y * -1 : y;
+        return (x < 10 && y < 10);
+    }
+
+
     // Check Collision with walls
     collision(nx, ny) {
         if (
             nx === -1 ||
-            nx >= Math.floor(this.canvas.width / this.conf.cw) ||
+            nx >= Math.floor(this.canvas.width / this.conf.imageRadus) ||
             ny === -1 ||
-            ny >= Math.floor(this.canvas.height / this.conf.cw)
+            ny >= Math.floor(this.canvas.height / this.conf.imageRadus)
         ) {
             this.fail(false);
             return;
@@ -283,5 +296,5 @@ class Game {
  * Window Load
  */
 window.onload = function() {
-        racoGame = new Game("stage").Run({fps: 10});
+        racoGame = new Game("stage").Run({});
 };
