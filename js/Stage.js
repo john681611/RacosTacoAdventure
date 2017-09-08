@@ -1,7 +1,7 @@
 class Stage {
     constructor(canvas, imageRadus){
         this.canvas = canvas;
-        this.imageRadus = imageRadus;
+        this.gridScale = imageRadus;
         this.tacoLocation = {};
         this.initTaco()
     }
@@ -11,13 +11,13 @@ class Stage {
         this.tacoLocation = {
             x: Math.floor(
                 Math.random() *
-                (this.canvas.width - this.imageRadus) /
-                this.imageRadus
+                (this.canvas.width - this.gridScale) /
+                this.gridScale
             ),
             y: Math.floor(
                 Math.random() *
-                (this.canvas.height - this.imageRadus) /
-                this.imageRadus
+                (this.canvas.height - this.gridScale) /
+                this.gridScale
             )
         };
     };
