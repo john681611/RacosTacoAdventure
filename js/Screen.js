@@ -20,7 +20,6 @@ class Screen{
             let cell = this.raco.length[i];
             this.draw(cell.x,cell.y,document.getElementById("taco"));
         }
-
         this.draw(head.x,head.y,document.getElementById("head"));
         this.draw(this.tacoLocation.x,this.tacoLocation.y,document.getElementById("food"));
         this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
@@ -29,10 +28,10 @@ class Screen{
     draw(x,y,img){
         this.context.drawImage(
             img,
-            x * this.conf.imageRadus,
-            y * this.conf.imageRadus,
-            this.conf.size,
-            this.conf.size
+            x * this.conf.gridScale,
+            y * this.conf.gridScale,
+            this.conf.imageSize,
+            this.conf.imageSize
         );
     }
 
