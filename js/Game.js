@@ -114,8 +114,8 @@ class Game {
 
     // Check Collision with walls
     collision(nx, ny) {
-        let borderL = Math.floor((this.canvas.width - this.conf.imageSize) / this.conf.gridScale);
-        let borderB = Math.floor((this.canvas.height - - this.conf.imageSize)  / this.conf.gridScale);
+        let borderL = Math.floor((this.canvas.width - (this.conf.imageSize/2)) / this.conf.gridScale);
+        let borderB = Math.floor((this.canvas.height - (this.conf.imageSize/2))  / this.conf.gridScale);
         if (nx === -1 || nx >= borderL  || ny === -1 || ny >= borderB) {
             this.fail(false);
             return;
