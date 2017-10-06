@@ -27,6 +27,7 @@ class Game {
 
     Run(conf){
         this.processConfig(conf);
+        this.boxScale = this.conf.imageSize / 2;
         this.screen = new Screen(this.canvas,this.conf);
         this.raco = new Raco(this.canvas);
         this.stage = new Stage(this.canvas, this.conf.gridScale);
@@ -93,31 +94,34 @@ class Game {
         this.screen.updateData(this.raco,this.stage.tacoLocation,this.score);
     }
 
-    //WIP
-    eatTaco(racoX,racoY) {
+    getBox(x,y){
+        x = (x * this.conf.gridScale) + this.boxScale / 2;
+        y = (y * this.conf.gridScale) + this.boxScale / 2;
+        return {
+            x,
+            y,
+            x2: x + this.boxScale,
+            y2: y + this.boxScale
+        }
+    }
+
+    //collison between taco and raco
+    eatTaco(racoX, racoY) {
         //get true top corner for raco
-        let boxScale = this.conf.imageSize / 2;
-        racoX = (racoX * this.conf.gridScale) + boxScale / 2;
-        racoY = (racoY * this.conf.gridScale) + boxScale / 2;
-        let racoX2 = racoX + boxScale;
-        let racoY2 = racoY + boxScale;
-
-        let tacoX = (this.stage.tacoLocation.x * this.conf.gridScale) + boxScale / 2;
-        let tacoY = (this.stage.tacoLocation.y * this.conf.gridScale) + boxScale / 2;
-        let tacoX2 = tacoX + boxScale;
-        let tacoY2 = tacoY + boxScale;
+        let raco = this.getBox(racoX,racoY);
+        let taco = this.getBox(this.stage.tacoLocation.x,this.stage.tacoLocation.y);
 
 
-        return racoX < tacoX2 && racoX2 > tacoX &&
-            racoY < tacoY2 && racoY2 > tacoY;
+        return raco.x < taco.x2 && raco.x2 > taco.x &&
+            raco.y < taco.y2 && raco.y2 > taco.y;
     }
 
 
 
-    // Check Collision with walls
+    // Check Collision with walls or self
     collision(nx, ny) {
-        let borderL = Math.floor((this.canvas.width - (this.conf.imageSize/2)) / this.conf.gridScale);
-        let borderB = Math.floor((this.canvas.height - (this.conf.imageSize/2))  / this.conf.gridScale);
+        let borderL = Math.floor((this.canvas.width - (this.conf.imageSize/4)) / this.conf.gridScale);
+        let borderB = Math.floor((this.canvas.height - (this.conf.imageSize/4))  / this.conf.gridScale);
         if (nx === -1 || nx >= borderL  || ny === -1 || ny >= borderB) {
             this.fail(false);
             return;

@@ -13,7 +13,8 @@ class Screen{
 
     drawFrame() {
         this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-
+        this.context.rect(0, 0, Math.floor((this.canvas.width - (this.conf.imageSize/4))), Math.floor((this.canvas.height - (this.conf.imageSize/4))));
+        this.context.stroke();
         let head = this.raco.length[0];
         // Draw raco
         for (let i = 1; i < this.raco.length.length; i++) {
@@ -37,6 +38,7 @@ class Screen{
 
     countdownFrame(x,taco){
         this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
+        this.drawFrame();
         this.context.fillText(""+this.score, this.context.canvas.width/2 , this.context.canvas.height/2 - 80);
         if(taco){
             this.context.fillText("Oh No Raco Crushed A Taco!",this.context.canvas.width/2 , this.context.canvas.height/2);
