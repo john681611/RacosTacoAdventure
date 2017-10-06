@@ -96,15 +96,17 @@ class Game {
     //WIP
     eatTaco(racoX,racoY) {
         //get true top corner for raco
-        racoX = racoX * this.conf.gridScale;
-        racoY = racoY * this.conf.gridScale;
-        let racoX2 = racoX + this.conf.imageSize;
-        let racoY2 = racoY + this.conf.imageSize;
+        let boxScale = this.conf.imageSize / 2;
+        racoX = (racoX * this.conf.gridScale) + boxScale / 2;
+        racoY = (racoY * this.conf.gridScale) + boxScale / 2;
+        let racoX2 = racoX + boxScale;
+        let racoY2 = racoY + boxScale;
 
-        let tacoX = this.stage.tacoLocation.x * this.conf.gridScale;
-        let tacoY = this.stage.tacoLocation.y * this.conf.gridScale;
-        let tacoX2 = tacoX + this.conf.imageSize;
-        let tacoY2 = tacoY + this.conf.imageSize;
+        let tacoX = (this.stage.tacoLocation.x * this.conf.gridScale) + boxScale / 2;
+        let tacoY = (this.stage.tacoLocation.y * this.conf.gridScale) + boxScale / 2;
+        let tacoX2 = tacoX + boxScale;
+        let tacoY2 = tacoY + boxScale;
+
 
         return racoX < tacoX2 && racoX2 > tacoX &&
             racoY < tacoY2 && racoY2 > tacoY;
