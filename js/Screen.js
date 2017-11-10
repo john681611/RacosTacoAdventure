@@ -5,15 +5,19 @@ class Screen{
         this.conf = conf;
     }
 
-    updateData(raco, tacoLocation,score){
+    updateData(raco, tacoLocation,score,scoreBoard){
         this.raco = raco;
         this.tacoLocation = tacoLocation;
         this.score = score;
+        this.scoreBoard = scoreBoard;
     }
 
     drawFrame() {
+        
         this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height);
         this.context.rect(0, 0, Math.floor((this.canvas.width - (this.conf.imageSize/4))), Math.floor((this.canvas.height - (this.conf.imageSize/4))));
+        this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
+        this.drawScoreBoard();
         this.context.stroke();
         let head = this.raco.length[0];
         // Draw raco
@@ -22,8 +26,7 @@ class Screen{
             this.draw(cell.x,cell.y,document.getElementById("taco"));
         }
         this.draw(head.x,head.y,document.getElementById("head"));
-        this.draw(this.tacoLocation.x,this.tacoLocation.y,document.getElementById("food"));
-        this.context.fillText("Score: " + this.score, this.context.canvas.width/2, 50);
+        this.draw(this.tacoLocation.x,this.tacoLocation.y,document.getElementById("food")); 
     };
 
     draw(x,y,img){
@@ -77,6 +80,19 @@ class Screen{
             400,
             400
         );
+    }
+
+    drawScoreBoard(){
+        this.context.font = "24px  Lobster";
+        this.context.textAlign = "left";
+        let y = 25
+        this.context.fillText("Score Board", 20, y);
+        this.scoreBoard.forEach(function(element) {
+            y += 20;
+            this.context.fillText(element.name + " : " + element.score, 20, y);
+        }, this);
+        this.context.font = "72px  Lobster";
+        this.context.textAlign = "center";
     }
 
     resizeCanvas() {

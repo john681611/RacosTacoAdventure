@@ -26,6 +26,37 @@ class Game {
     };
 
     Run(conf){
+        let self = this;
+        var request = new XMLHttpRequest();
+        request.open('GET', 'http://localhost:8080/getBoard', true);
+        
+        request.onload = function() {
+          if (request.status >= 200 && request.status < 400) {
+            // Success!
+            self.scoreBoard = JSON.parse(request.responseText);
+          } else {
+            // We reached our target server, but it returned an error
+            console.error(request.responseText)
+          }
+
+            document.onkeydown = function () {
+                self.keyEvent = new Keyboard();
+                //Separate Intervals for rendering and processing
+                self.processInterval = setInterval(function () {
+                    self.processFrame();
+                }, 1000 / self.conf.fps);
+                self.renderInterval = setInterval(function () {
+                    self.screen.drawFrame()
+                }, 1000 / 60);
+            };
+        };
+        
+        request.onerror = function() {
+          // There was a connection error of some sort
+        };
+        
+        request.send();
+
         this.processConfig(conf);
         this.boxScale = this.conf.imageSize / 2;
         this.screen = new Screen(this.canvas,this.conf);
@@ -33,19 +64,6 @@ class Game {
         this.stage = new Stage(this.canvas, this.conf.gridScale);
         this.score = 0;
         this.screen.prep();
-        let self = this;
-        document.onkeydown = function () {
-            self.keyEvent = new Keyboard();
-            //Separate Intervals for rendering and processing
-            self.processInterval = setInterval(function () {
-                self.processFrame();
-            }, 1000 / self.conf.fps);
-            self.renderInterval = setInterval(function () {
-                self.screen.drawFrame()
-            }, 1000 / 60);
-
-
-        };
     }
 
     processFrame(){
@@ -91,7 +109,7 @@ class Game {
             tail.y = ny;
         }
         this.raco.length.unshift(tail);
-        this.screen.updateData(this.raco,this.stage.tacoLocation,this.score);
+        this.screen.updateData(this.raco,this.stage.tacoLocation,this.score, this.scoreBoard);
     }
 
     getBox(x,y){
